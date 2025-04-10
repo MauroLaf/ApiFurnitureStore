@@ -33,7 +33,8 @@ namespace ApiFurnitureStore.API.Controllers
             if (order.OrderDetails == null) //validamos
                 return BadRequest("Order should have at least one details");
             await _context.Orders.AddAsync(order);//en esta linea inserto la orden
-            await _context.OrderDetails.AddRangeAsync();//inserto todos sus detalles con range y no iserto una a una con foreach 
+            await _context.OrderDetails.AddRangeAsync(order.OrderDetails);//inserto todos sus detalles con range y no iserto una a una con foreach. PROBE DEJAR VACIO y al cargar datos me pone id=0  no carga los detalles 
+            await _context.SaveChangesAsync(); //nunca olvidar guardar los cambios por eso tambien no guardaba los cambios y el id era 0
             return CreatedAtAction("PostOrder", order.Id, order);
         }
         [HttpPut]

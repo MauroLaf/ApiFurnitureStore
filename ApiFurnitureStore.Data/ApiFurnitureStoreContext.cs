@@ -21,7 +21,7 @@ namespace ApiFurnitureStore.Data
         {
             optionsBuilder.UseSqlite();
         }
-        //para avisar que agregare una nueva tabla con relaciones
+        //para avisar que agregare una nueva tabla con relaciones y especificar relaciones como las fk
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //especifico que creare una tabla que tendra una pk(compuesta)
