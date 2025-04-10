@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ApiFurnitureStore.Shared.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace ApiFurnitureStore.Data
 {
-    public class ApiFurnitureStoreContext : DbContext
+    public class ApiFurnitureStoreContext : IdentityDbContext //antes era dbcontext hasta que agregamos paquete identity
     {
         //constructor dbcontext
         public ApiFurnitureStoreContext(DbContextOptions options) : base (options) { }
