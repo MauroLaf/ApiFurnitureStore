@@ -1,11 +1,13 @@
 ﻿using ApiFurnitureStore.Data;
 using ApiFurnitureStore.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiFurnitureStore.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController] //decorador, definicion del endpoint
     public class ClientsController : ControllerBase

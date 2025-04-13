@@ -1,6 +1,7 @@
 ﻿using ApiFurnitureStore.API.Configuration;
 using ApiFurnitureStore.Shared.Auth;
 using ApiFurnitureStore.Shared.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -51,7 +52,7 @@ namespace ApiFurnitureStore.API.Controllers
                 UserName = request.EmailAddress
             };
 
-            var isCreated = await _userManager.CreateAsync(user);
+            var isCreated = await _userManager.CreateAsync(user,request.Password);
             if (isCreated.Succeeded)
             {
                 var token = GenerateToken(user);
@@ -81,6 +82,40 @@ namespace ApiFurnitureStore.API.Controllers
                 Errors = new List<string> { "User couldn't be created" }
             });
         }
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginRequestDto request)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            // 1. Busco el usuario
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+
+            // 2. Si no existe, devuelvo error
+            if (existingUser == null)
+            {
+                return BadRequest(new AuthResult
+                {
+                    Errors = new List<string> { "Invalid Payload" },
+                    Result = false
+                });
+            }
+
+            // 3. Verifico la contraseña
+            var checkUserAndPass = await _userManager.CheckPasswordAsync(existingUser, request.Password);
+            if (!checkUserAndPass)
+            {
+                return BadRequest(
+                    new AuthResult
+                    {
+                        Errors = new List<string> { "Invalid Credentials" },
+                        Result = false
+                    });
+            }
+
+            // 4. Si todo está bien, creo el token
+            var token = GenerateToken(existingUser);
+            return Ok(new AuthResult { Token = token, Result = true });
+        }
         //creo la clase token
         private string GenerateToken(IdentityUser user)
         {
@@ -97,7 +132,7 @@ namespace ApiFurnitureStore.API.Controllers
                     new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToUniversalTime().ToString())
                 })),
                 Expires = DateTime.UtcNow.AddDays(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.Aes128CbcHmacSha256)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)//cambie el alg
             };
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             return jwtTokenHandler.WriteToken(token);

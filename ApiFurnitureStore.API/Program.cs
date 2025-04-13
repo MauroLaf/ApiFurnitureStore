@@ -4,21 +4,53 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+//agrego codigo para seguir usando swager con authoraize
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Furniture_Store_API",
+        Version = "v1"
+    });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = $@"JWT Authorization header using the Bearer Scheme.
+                      r\n\r\n Enter prefix(Bearer), space, and then your token.
+                      Example: 'Bearer 123453rgfgrtefw'"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string []{}
+        }
+    });
+});
 
 //agregamos las dependencias y le decimos a que cadena y gestor conectaremos
 //con las options que configuramos en context las configuramos aqui
 builder.Services.AddDbContext<ApiFurnitureStoreContext>(options =>
             options.UseSqlite(builder.Configuration.GetConnectionString("APiFurnitureStoreContext")));
+
 //inyecto en este contenedor de dependencias la clase jwtconfig (es de tipo configuration)le digo el tipo de la clase que voy a configurar, en base a lo que esta en upsettings
 //leera lo que esta en la section jwtconfig y lo mapee al objeto <jwtConfig>
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
@@ -44,22 +76,29 @@ builder.Services.AddAuthentication(options =>
             ValidateLifetime = true,
         };
     });
+
+// Configuración de identidad para los usuarios
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
         options.SignIn.RequireConfirmedAccount = false)
         .AddEntityFrameworkStores<ApiFurnitureStoreContext>();
 
 var app = builder.Build();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger();   // Swagger debe estar disponible en desarrollo
+    app.UseSwaggerUI(); // Swagger UI para visualizar la documentación
 }
 
-app.UseHttpsRedirection();
+app.UseHttpsRedirection();  // Redirigir tráfico HTTP a HTTPS
+
+// Agrega el middleware de autenticación para verificar el token JWT
 app.UseAuthentication();
+
+// Después de autenticar, se aplica autorización
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers(); // Mapea los controladores
 
-app.Run();
+app.Run(); // Ejecuta la aplicación
