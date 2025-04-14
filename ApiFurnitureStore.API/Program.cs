@@ -54,6 +54,7 @@ builder.Services.AddDbContext<ApiFurnitureStoreContext>(options =>
 //inyecto en este contenedor de dependencias la clase jwtconfig (es de tipo configuration)le digo el tipo de la clase que voy a configurar, en base a lo que esta en upsettings
 //leera lo que esta en la section jwtconfig y lo mapee al objeto <jwtConfig>
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings")); //mapeo esta clase a options, le digo carga la sección SmtpSettings del appsettings.json dentro de una clase SmtpSettings y para que esté disponible a traves de IOptions<SmtpSettings>.
 
 //agregamos el addautentication y agregaremos options
 builder.Services.AddAuthentication(options =>
