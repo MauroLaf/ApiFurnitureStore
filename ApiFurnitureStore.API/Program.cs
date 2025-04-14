@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description = $@"JWT Authorization header using the Bearer Scheme.
-                      r\n\r\n Enter prefix(Bearer), space, and then your token.
+                      Enter prefix(Bearer), space, and then your token.
                       Example: 'Bearer 123453rgfgrtefw'"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
@@ -71,7 +71,7 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuer = false, //normalmente deberia estar en true
-            ValidateAudience = true, //deberia tamb estar true para validar el destinatario
+            ValidateAudience = false, //deberia tamb estar true para validar el destinatario pero lo cambie y me no me mostraba informacion al autorizar con el token
             RequireExpirationTime = false, //por ahora dejaremos falso deberia estar true
             ValidateLifetime = true,
         };
