@@ -1,7 +1,9 @@
 using ApiFurnitureStore.API.Configuration;
+using ApiFurnitureStore.API.Services;
 using ApiFurnitureStore.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -55,7 +57,8 @@ builder.Services.AddDbContext<ApiFurnitureStoreContext>(options =>
 //leera lo que esta en la section jwtconfig y lo mapee al objeto <jwtConfig>
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings")); //mapeo esta clase a options, le digo carga la sección SmtpSettings del appsettings.json dentro de una clase SmtpSettings y para que esté disponible a traves de IOptions<SmtpSettings>.
-
+//Email
+builder.Services.AddSingleton<IEmailSender, EmailService>();   
 //agregamos el addautentication y agregaremos options
 builder.Services.AddAuthentication(options =>
 {

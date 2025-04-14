@@ -4,6 +4,7 @@ using ApiFurnitureStore.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -20,12 +21,16 @@ namespace ApiFurnitureStore.API.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly JwtConfig _jwtConfig;
+        private readonly IEmailSender _emailSender;
+
 
         public AuthenticationController(UserManager<IdentityUser> userManager,
-                                        IOptions<JwtConfig> jwtConfig)
+                                        IOptions<JwtConfig> jwtConfig,
+                                        IEmailSender emailSender)
         {
             _userManager = userManager;
             _jwtConfig = jwtConfig.Value; //es de tipo jwtconfig si dejo sin value me marcara error
+            _emailSender = emailSender;
         }
         //creo endpoint de registro
         [HttpPost("register")]
