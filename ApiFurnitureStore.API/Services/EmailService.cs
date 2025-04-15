@@ -21,7 +21,7 @@ namespace ApiFurnitureStore.API.Services
                 message.From.Add(new MailboxAddress(_smtpSettings.SenderName, _smtpSettings.SenderEmail));
                 message.To.Add(new MailboxAddress("", email));
                 message.Subject = subject;
-                message.Body = new TextPart(htmlMessage);
+                message.Body = new TextPart("html") { Text = htmlMessage };
 
                 //abro smtpclient con using para abrir y cerrar conexiones
                 using (var client = new SmtpClient())
@@ -32,7 +32,7 @@ namespace ApiFurnitureStore.API.Services
                     await client.DisconnectAsync(true);
                 }
             }
-            catch  (Exception)
+            catch (Exception)
             {
                 throw;
             }

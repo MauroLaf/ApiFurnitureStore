@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 
 namespace ApiFurnitureStore.API.Controllers
 {
@@ -33,7 +35,7 @@ namespace ApiFurnitureStore.API.Controllers
             _emailSender = emailSender;
         }
         //creo endpoint de registro
-        [HttpPost("register")]
+        [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationRequestDto request)
         {
             if (!ModelState.IsValid) return BadRequest();//verifico el estado
@@ -54,18 +56,20 @@ namespace ApiFurnitureStore.API.Controllers
             var user = new IdentityUser() //usamos la clase que nos da la libreria directamente
             {
                 Email = request.EmailAddress,
-                UserName = request.EmailAddress
+                UserName = request.EmailAddress,
+                EmailConfirmed = false //agrego al tener el mail de confirmacion
             };
 
             var isCreated = await _userManager.CreateAsync(user,request.Password);
             if (isCreated.Succeeded)
             {
-                var token = GenerateToken(user);
+                //var token = GenerateToken(user);
+                await SendVerificationEmail(user);
                 return Ok(new AuthResult()
                 {
                     Result = true,
 
-                    Token = token
+                   // Token = token
                 });
             }
             else
@@ -97,13 +101,20 @@ namespace ApiFurnitureStore.API.Controllers
 
             // 2. Si no existe, devuelvo error
             if (existingUser == null)
-            {
+            
                 return BadRequest(new AuthResult
                 {
                     Errors = new List<string> { "Invalid Payload" },
                     Result = false
                 });
-            }
+            
+            if (!existingUser.EmailConfirmed)
+                    return BadRequest(new AuthResult
+                    {
+                        Errors = new List<string> { "email needs to be confirmed." },
+                        Result = false
+                    });
+            
 
             // 3. Verifico la contraseña
             var checkUserAndPass = await _userManager.CheckPasswordAsync(existingUser, request.Password);
@@ -120,6 +131,30 @@ namespace ApiFurnitureStore.API.Controllers
             // 4. Si todo está bien, creo el token
             var token = GenerateToken(existingUser);
             return Ok(new AuthResult { Token = token, Result = true });
+        }
+        
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (string .IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+                    return BadRequest(new AuthResult
+                    {
+                        Errors = new List<string> { "Invalid email confirmation url" },
+                        Result = false
+                    });
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound($"Unable to load user with Id '{userId}'.");
+            
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+
+            var status = result.Succeeded ? "Thank you for confirming your email."
+                                            : "There has been an error confirming your email.";
+
+            return Ok(status);
+
         }
         //creo la clase token
         private string GenerateToken(IdentityUser user)
@@ -141,6 +176,17 @@ namespace ApiFurnitureStore.API.Controllers
             };
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             return jwtTokenHandler.WriteToken(token);
+        }
+        private async Task SendVerificationEmail(IdentityUser user)
+        {
+            var verificationCode = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            verificationCode = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(verificationCode));
+
+            //example: https://localhost:5015/api/authentication/verifyemail/userId=exampleuserId&code=examplecode
+            var callbackUrl = $@"{Request.Scheme}://{Request.Host}{Url.Action("ConfirmEmail", controller: "Authentication", new { userId = user.Id, code = verificationCode })}";
+
+            var emailBody = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>";
+            await _emailSender.SendEmailAsync(user.Email, "Confirm your Email", emailBody);
         }
     }
 }
