@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ApiFurnitureStore.Shared.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using ApiFurnitureStore.Shared.DTOs;
 
 namespace ApiFurnitureStore.Data
 {
@@ -16,6 +17,7 @@ namespace ApiFurnitureStore.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         //uso un metodo heredado de dbcontext para usar sqlite
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

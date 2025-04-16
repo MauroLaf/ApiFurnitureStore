@@ -1,5 +1,7 @@
 ﻿using ApiFurnitureStore.API.Configuration;
+using ApiFurnitureStore.Data;
 using ApiFurnitureStore.Shared.Auth;
+using ApiFurnitureStore.Shared.Common;
 using ApiFurnitureStore.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,15 +26,19 @@ namespace ApiFurnitureStore.API.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly JwtConfig _jwtConfig;
         private readonly IEmailSender _emailSender;
+        private readonly ApiFurnitureStoreContext _context;
+
 
 
         public AuthenticationController(UserManager<IdentityUser> userManager,
                                         IOptions<JwtConfig> jwtConfig,
-                                        IEmailSender emailSender)
+                                        IEmailSender emailSender,
+                                        ApiFurnitureStoreContext context)
         {
             _userManager = userManager;
             _jwtConfig = jwtConfig.Value; //es de tipo jwtconfig si dejo sin value me marcara error
             _emailSender = emailSender;
+            _context = context;
         }
         //creo endpoint de registro
         [HttpPost("Register")]
@@ -130,7 +136,8 @@ namespace ApiFurnitureStore.API.Controllers
 
             // 4. Si todo está bien, creo el token
             var token = GenerateToken(existingUser);
-            return Ok(new AuthResult { Token = token, Result = true });
+            return Ok(token);
+            
         }
         
         [HttpGet("ConfirmEmail")]
@@ -157,7 +164,7 @@ namespace ApiFurnitureStore.API.Controllers
 
         }
         //creo la clase token
-        private string GenerateToken(IdentityUser user)
+        private async Task<AuthResult> GenerateToken(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
@@ -171,11 +178,31 @@ namespace ApiFurnitureStore.API.Controllers
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToUniversalTime().ToString())
                 })),
-                Expires = DateTime.UtcNow.AddDays(1),
+                Expires = DateTime.UtcNow.Add(_jwtConfig.ExpiryTime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)//cambie el alg
             };
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
-            return jwtTokenHandler.WriteToken(token);
+            var jwtToken = jwtTokenHandler.WriteToken(token);
+            var refreshToken = new RefreshToken
+            {
+                JwtId = token.Id,
+                Token = RandomGenerator.GenerateRandomString(23),
+                AddedDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                IsRevoked = false,
+                IsUsed = false,
+                UserId = user.Id,
+            };
+
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
+
+            return new AuthResult
+            {
+                Token = jwtToken,
+                RefreshToken = refreshToken.Token,
+                Result = true
+            };
         }
         private async Task SendVerificationEmail(IdentityUser user)
         {
