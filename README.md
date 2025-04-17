@@ -4,7 +4,7 @@ http://localhost:3333/swagger/index.html
 
 # Temas Abordados en el Proyecto
 
-## 📌 Introducción a C# y .NET
+## 📌 Intro C# y .NET
 
 - Conceptos básicos de C#
 - Configuración del entorno de desarrollo
