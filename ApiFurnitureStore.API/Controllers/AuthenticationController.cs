@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
@@ -27,18 +28,21 @@ namespace ApiFurnitureStore.API.Controllers
         private readonly JwtConfig _jwtConfig;
         private readonly IEmailSender _emailSender;
         private readonly ApiFurnitureStoreContext _context;
+        private readonly TokenValidationParameters _tokenValidationParameters;
 
 
 
         public AuthenticationController(UserManager<IdentityUser> userManager,
                                         IOptions<JwtConfig> jwtConfig,
                                         IEmailSender emailSender,
-                                        ApiFurnitureStoreContext context)
+                                        ApiFurnitureStoreContext context,
+                                        TokenValidationParameters tokenValidationParameters)
         {
             _userManager = userManager;
             _jwtConfig = jwtConfig.Value; //es de tipo jwtconfig si dejo sin value me marcara error
             _emailSender = emailSender;
             _context = context;
+            _tokenValidationParameters = tokenValidationParameters;
         }
         //creo endpoint de registro
         [HttpPost("Register")]
@@ -66,7 +70,7 @@ namespace ApiFurnitureStore.API.Controllers
                 EmailConfirmed = false //agrego al tener el mail de confirmacion
             };
 
-            var isCreated = await _userManager.CreateAsync(user,request.Password);
+            var isCreated = await _userManager.CreateAsync(user, request.Password);
             if (isCreated.Succeeded)
             {
                 //var token = GenerateToken(user);
@@ -75,7 +79,7 @@ namespace ApiFurnitureStore.API.Controllers
                 {
                     Result = true,
 
-                   // Token = token
+                    // Token = token
                 });
             }
             else
@@ -107,20 +111,20 @@ namespace ApiFurnitureStore.API.Controllers
 
             // 2. Si no existe, devuelvo error
             if (existingUser == null)
-            
+
                 return BadRequest(new AuthResult
                 {
                     Errors = new List<string> { "Invalid Payload" },
                     Result = false
                 });
-            
+
             if (!existingUser.EmailConfirmed)
-                    return BadRequest(new AuthResult
-                    {
-                        Errors = new List<string> { "email needs to be confirmed." },
-                        Result = false
-                    });
-            
+                return BadRequest(new AuthResult
+                {
+                    Errors = new List<string> { "email needs to be confirmed." },
+                    Result = false
+                });
+
 
             // 3. Verifico la contraseña
             var checkUserAndPass = await _userManager.CheckPasswordAsync(existingUser, request.Password);
@@ -135,26 +139,45 @@ namespace ApiFurnitureStore.API.Controllers
             }
 
             // 4. Si todo está bien, creo el token
-            var token = GenerateToken(existingUser);
+            var token = GenerateTokenAsync(existingUser);
             return Ok(token);
-            
+
         }
-        
+
+        //este endpoint es para darle un token a todo el que quiera usar la api para hacer un refresh
+        [HttpPost("RefreshToken")]
+        public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new AuthResult
+                {
+                    Errors = new List<string> { "Invalid parameters" },
+                    Result = false
+                });
+            var results = VerifyAndGenerateTokenAsync(tokenRequest);
+            if (results == null)
+                return BadRequest(new AuthResult
+                {
+                    Errors = new List<string> { "Invalid token" }
+                });
+            return Ok(results);
+        }
+
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
-            if (string .IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
-                    return BadRequest(new AuthResult
-                    {
-                        Errors = new List<string> { "Invalid email confirmation url" },
-                        Result = false
-                    });
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+                return BadRequest(new AuthResult
+                {
+                    Errors = new List<string> { "Invalid email confirmation url" },
+                    Result = false
+                });
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 return NotFound($"Unable to load user with Id '{userId}'.");
-            
+
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-            
+
             var result = await _userManager.ConfirmEmailAsync(user, code);
 
             var status = result.Succeeded ? "Thank you for confirming your email."
@@ -164,7 +187,7 @@ namespace ApiFurnitureStore.API.Controllers
 
         }
         //creo la clase token
-        private async Task<AuthResult> GenerateToken(IdentityUser user)
+        private async Task<AuthResult> GenerateTokenAsync(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_jwtConfig.Secret);
@@ -214,6 +237,65 @@ namespace ApiFurnitureStore.API.Controllers
 
             var emailBody = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>";
             await _emailSender.SendEmailAsync(user.Email, "Confirm your Email", emailBody);
+        }
+        private async Task <AuthResult> VerifyAndGenerateTokenAsync(TokenRequest tokenRequest)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+
+            try
+            {
+                _tokenValidationParameters.ValidateLifetime = false;
+
+                var tokenBeingVerified = jwtTokenHandler.ValidateToken(tokenRequest.Token, _tokenValidationParameters, out var validatedToken);
+
+                if(validatedToken is JwtSecurityToken jwtSecurityToken)
+                {
+                    var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                        StringComparison.InvariantCultureIgnoreCase);
+
+                    if (!result || tokenBeingVerified == null)
+                        throw new Exception("Invalid Token");
+                }
+
+                var utcExpiryDate = long.Parse(tokenBeingVerified.Claims.
+                                    FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp).Value);
+
+                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(utcExpiryDate).UtcDateTime;
+
+                if(expiryDate < DateTimeOffset.UtcNow)
+                    throw new Exception("Expired Token");
+
+                var storedToken = await _context.RefreshTokens.
+                    FirstOrDefaultAsync(t => t.Token == tokenRequest.RefreshToken);
+
+                if(storedToken == null)
+                    throw new Exception("Invalid Token");
+
+                if(storedToken.IsUsed || storedToken.IsRevoked)
+                    throw new Exception("Invalid Token");
+
+                var jti = tokenBeingVerified.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+
+                if (jti != storedToken.JwtId)
+                    throw new Exception("Invalid Token");
+
+                if (storedToken.ExpiryDate < DateTime.UtcNow)
+                    throw new Exception("Token Expired");
+                storedToken.IsUsed = true;
+                _context.RefreshTokens.Update(storedToken);
+                await _context.SaveChangesAsync();
+
+                var dbUser = await _userManager.FindByIdAsync(storedToken.UserId);
+                return await GenerateTokenAsync(dbUser);
+
+            }
+            catch(Exception e)
+            {
+                var message = e.Message == "Invalid Token" || e.Message == "Token Expired"
+                    ? e.Message
+                    : "Internal Server Error";
+                return new AuthResult() { Result = false, Errors = new List<string> { message } };
+            }
         }
     }
 }
