@@ -29,6 +29,7 @@ namespace ApiFurnitureStore.API.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ApiFurnitureStoreContext _context;
         private readonly TokenValidationParameters _tokenValidationParameters;
+        private readonly ILogger<AuthenticationController> _logger;
 
 
 
@@ -36,21 +37,26 @@ namespace ApiFurnitureStore.API.Controllers
                                         IOptions<JwtConfig> jwtConfig,
                                         IEmailSender emailSender,
                                         ApiFurnitureStoreContext context,
-                                        TokenValidationParameters tokenValidationParameters)
+                                        TokenValidationParameters tokenValidationParameters,
+                                        ILogger<AuthenticationController> logger)
         {
             _userManager = userManager;
             _jwtConfig = jwtConfig.Value; //es de tipo jwtconfig si dejo sin value me marcara error
             _emailSender = emailSender;
             _context = context;
             _tokenValidationParameters = tokenValidationParameters;
+            _logger = logger;
         }
         //creo endpoint de registro
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationRequestDto request)
         {
+            //agrego un warning para probar el logger que inyecte en este controlador
+            _logger.LogWarning("A user trying to register");
+
             if (!ModelState.IsValid) return BadRequest();//verifico el estado
 
-            //verifico si existe el mailç
+            //verifico si existe el mail
             var emailExists = await _userManager.FindByEmailAsync(request.EmailAddress);
             if (emailExists != null)
                 return BadRequest(new AuthResult()
