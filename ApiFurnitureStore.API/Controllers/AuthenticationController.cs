@@ -263,7 +263,7 @@ namespace ApiFurnitureStore.API.Controllers
                 var expiryDate = DateTimeOffset.FromUnixTimeSeconds(utcExpiryDate).UtcDateTime;
 
                 if(expiryDate < DateTimeOffset.UtcNow)
-                    throw new Exception("Expired Token");
+                    throw new Exception("Token Expired");
 
                 var storedToken = await _context.RefreshTokens.
                     FirstOrDefaultAsync(t => t.Token == tokenRequest.RefreshToken);
