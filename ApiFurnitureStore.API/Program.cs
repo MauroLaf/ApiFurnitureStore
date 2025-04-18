@@ -108,11 +108,12 @@ try
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
+
+    //***quite el if en caso de estar en modo development***
+
         app.UseSwagger();   // Swagger debe estar disponible en desarrollo
         app.UseSwaggerUI(); // Swagger UI para visualizar la documentación
-    }
+   
 
     app.UseHttpsRedirection();  // Redirigir tráfico HTTP a HTTPS
 
