@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApiFurnitureStore.Share\ApiFurnitureStore.Shared.csproj" />
+    <ProjectReference Include="..\ApiFurnitureStore.Share\ApiFurnitureStore.Share.csproj" />
   </ItemGroup>
 
 </Project>
