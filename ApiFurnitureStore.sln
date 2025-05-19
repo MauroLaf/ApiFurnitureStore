@@ -1,11 +1,11 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiFurnitureStore.API", "ApiFurnitureStore.API\ApiFurnitureStore.API.csproj", "{8A9A14DC-6A98-4BDD-86B6-0B2F8557303F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiFurnitureStore.Share", "ApiFurnitureStore.Share\ApiFurnitureStore.Share.csproj", "{E998CC04-3EEA-40F4-8F36-66661826BBCB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiFurnitureStore.Shared", "ApiFurnitureStore.Shared\ApiFurnitureStore.Shared.csproj", "{E998CC04-3EEA-40F4-8F36-66661826BBCB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiFurnitureStore.Data", "ApiFurnitureStore.Data\ApiFurnitureStore.Data.csproj", "{405C20BD-1A8D-4783-85B8-3D5636012C62}"
 EndProject

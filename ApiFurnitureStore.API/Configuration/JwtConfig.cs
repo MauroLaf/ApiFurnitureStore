@@ -1,4 +1,4 @@
-﻿namespace ApiFurnitureStore.API.Configuration
+namespace ApiFurnitureStore.API.Configuration
 {
     public class JwtConfig
     {

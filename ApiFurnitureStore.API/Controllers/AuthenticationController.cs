@@ -1,8 +1,8 @@
-Ôªøusing ApiFurnitureStore.API.Configuration;
+using ApiFurnitureStore.API.Configuration;
 using ApiFurnitureStore.Data;
-using ApiFurnitureStore.Share.Auth;
-using ApiFurnitureStore.Share.Common;
-using ApiFurnitureStore.Share.DTOs;
+using ApiFurnitureStore.Shared.Auth;
+using ApiFurnitureStore.Shared.Common;
+using ApiFurnitureStore.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -132,7 +132,7 @@ namespace ApiFurnitureStore.API.Controllers
                 });
 
 
-            // 3. Verifico la contrase√±a
+            // 3. Verifico la contraseÒa
             var checkUserAndPass = await _userManager.CheckPasswordAsync(existingUser, request.Password);
             if (!checkUserAndPass)
             {
@@ -144,7 +144,7 @@ namespace ApiFurnitureStore.API.Controllers
                     });
             }
 
-            // 4. Si todo est√° bien, creo el token
+            // 4. Si todo est· bien, creo el token
             var token = GenerateTokenAsync(existingUser);
             return Ok(token);
 

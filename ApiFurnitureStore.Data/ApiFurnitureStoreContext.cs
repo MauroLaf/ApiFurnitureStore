@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ApiFurnitureStore.Share.Models;
+using Microsoft.EntityFrameworkCore;
+using ApiFurnitureStore.Shared.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using ApiFurnitureStore.Share.DTOs;
+using ApiFurnitureStore.Shared.DTOs;
 
 namespace ApiFurnitureStore.Data
 {

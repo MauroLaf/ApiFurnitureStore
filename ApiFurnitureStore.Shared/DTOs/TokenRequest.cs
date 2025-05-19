@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApiFurnitureStore.Share.DTOs
+namespace ApiFurnitureStore.Shared.DTOs
 {
     public class TokenRequest
     {

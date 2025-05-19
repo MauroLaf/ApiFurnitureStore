@@ -1,4 +1,4 @@
-﻿using ApiFurnitureStore.API.Configuration;
+using ApiFurnitureStore.API.Configuration;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -9,7 +9,7 @@ namespace ApiFurnitureStore.API.Services
     public class EmailService : IEmailSender
     {
         private readonly SmtpSettings _smtpSettings;
-        public EmailService(IOptions<SmtpSettings> smtpSettings) //IOptions<T> es una caja que contiene la configuración, por eso usare Value para acceder a sus prop
+        public EmailService(IOptions<SmtpSettings> smtpSettings) //IOptions<T> es una caja que contiene la configuraci�n, por eso usare Value para acceder a sus prop
         {
             _smtpSettings = smtpSettings.Value; //smptpSettings es del tipo IOptions<SmtpSettings>, no es directamente el objeto con las prop cargadas por eso para acceder a su prop real pongo .Value
         }
