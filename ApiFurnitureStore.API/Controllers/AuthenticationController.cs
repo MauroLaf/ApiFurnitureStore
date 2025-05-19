@@ -1,8 +1,8 @@
 ﻿using ApiFurnitureStore.API.Configuration;
 using ApiFurnitureStore.Data;
-using ApiFurnitureStore.Shared.Auth;
-using ApiFurnitureStore.Shared.Common;
-using ApiFurnitureStore.Shared.DTOs;
+using ApiFurnitureStore.Share.Auth;
+using ApiFurnitureStore.Share.Common;
+using ApiFurnitureStore.Share.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

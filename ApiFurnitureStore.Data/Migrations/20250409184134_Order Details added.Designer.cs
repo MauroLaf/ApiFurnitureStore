@@ -20,7 +20,7 @@ namespace ApiFurnitureStore.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.Client", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.Client", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -49,7 +49,7 @@ namespace ApiFurnitureStore.Data.Migrations
                     b.ToTable("Clients");
                 });
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.Order", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,7 +72,7 @@ namespace ApiFurnitureStore.Data.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.OrderDetail", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.OrderDetail", b =>
                 {
                     b.Property<int>("OrderId")
                         .HasColumnType("INTEGER");
@@ -90,7 +90,7 @@ namespace ApiFurnitureStore.Data.Migrations
                     b.ToTable("OrderDetails");
                 });
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.Product", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -111,7 +111,7 @@ namespace ApiFurnitureStore.Data.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.ProductCategory", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.ProductCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -126,27 +126,27 @@ namespace ApiFurnitureStore.Data.Migrations
                     b.ToTable("ProductCategories");
                 });
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.OrderDetail", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.OrderDetail", b =>
                 {
-                    b.HasOne("ApiFurnitureStore.Shared.Models.Order", null)
+                    b.HasOne("ApiFurnitureStore.Share.Models.Order", null)
                         .WithMany("Details")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ApiFurnitureStore.Shared.Models.Product", null)
+                    b.HasOne("ApiFurnitureStore.Share.Models.Product", null)
                         .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.Order", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.Order", b =>
                 {
                     b.Navigation("Details");
                 });
 
-            modelBuilder.Entity("ApiFurnitureStore.Shared.Models.Product", b =>
+            modelBuilder.Entity("ApiFurnitureStore.Share.Models.Product", b =>
                 {
                     b.Navigation("OrderDetails");
                 });

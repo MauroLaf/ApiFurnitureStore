@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApiFurnitureStore.Shared.DTOs
+namespace ApiFurnitureStore.Share.DTOs
 {
     public class RefreshToken
     {

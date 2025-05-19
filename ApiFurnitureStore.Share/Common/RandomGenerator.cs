@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApiFurnitureStore.Shared.Common
+namespace ApiFurnitureStore.Share.Common
 {
     public static class RandomGenerator
     {

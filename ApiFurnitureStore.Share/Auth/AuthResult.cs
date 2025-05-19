@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApiFurnitureStore.Shared.Auth
+namespace ApiFurnitureStore.Share.Auth
 {
     public class AuthResult
     {

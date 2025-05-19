@@ -1,5 +1,5 @@
 ﻿using ApiFurnitureStore.Data;
-using ApiFurnitureStore.Shared.Models;
+using ApiFurnitureStore.Share.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
