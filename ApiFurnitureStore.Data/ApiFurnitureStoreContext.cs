@@ -20,10 +20,12 @@ namespace ApiFurnitureStore.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         //uso un metodo heredado de dbcontext para usar sqlite
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        /*
+         * uso esto para configuracion manual de sqlite como tenia antes
+         * protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite();
-        }
+        }*/
         //para avisar que agregare una nueva tabla con relaciones y especificar relaciones como las fk
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

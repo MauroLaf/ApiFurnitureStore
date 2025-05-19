@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using NLog;
 using NLog.Web;
+using Microsoft.Extensions.Configuration;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -58,7 +59,7 @@ try
     //agregamos las dependencias y le decimos a que cadena y gestor conectaremos
     //con las options que configuramos en context las configuramos aqui
     builder.Services.AddDbContext<ApiFurnitureStoreContext>(options =>
-                options.UseSqlite(builder.Configuration.GetConnectionString("APiFurnitureStoreContext")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("APIFurnitureStoreContext")));
 
     //inyecto en este contenedor de dependencias la clase jwtconfig (es de tipo configuration)le digo el tipo de la clase que voy a configurar, en base a lo que esta en upsettings
     //leera lo que esta en la section jwtconfig y lo mapee al objeto <jwtConfig>
